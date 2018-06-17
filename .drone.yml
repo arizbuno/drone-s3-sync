@@ -1,0 +1,12 @@
+pipeline:
+
+  build-container:
+    image: plugins/docker
+    secrets:
+      - docker_username
+      - docker_password
+    repo: jonathanio/drone-s3-sync
+    auto_tag: true
+    when:
+      event: push
+      branch: master
