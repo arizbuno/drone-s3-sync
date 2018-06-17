@@ -3,40 +3,55 @@
 # Fail the whole script if any command fails
 set -e
 
-# Set Defaults
-PLUGIN_SETTINGS_REGION="${PLUGIN_SETTINGS_REGION:="us-east-1"}"
-PLUGIN_SETTINGS_TARGET="${PLUGIN_SETTINGS_TARGET:="/"}"
-PLUGIN_SETTINGS_SOURCE="${PLUGIN_SETTINGS_SOURCE:="."}"
+# Extract Settings
+REGION="$(echo "${PLUGIN_SETTINGS}" | jq -r '.region //= "us-east-1" | .region')"
+BUCKET="$(echo "${PLUGIN_SETTINGS}" | jq -r '.bucket //= "" | .bucket')"
+SOURCE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.source //= "." | .source')"
+TARGET="$(echo "${PLUGIN_SETTINGS}" | jq -r '.target //= "/" | .target')"
+DELETE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.delete //= "false" | .delete')"
 
-if [ -z "${PLUGIN_SETTINGS_BUCKET}" ]; then
+EXCLUDE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.exclude //= "" | .exclude')"
+INCLUDE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.include //= "" | .include')"
+
+ACL="$(echo "${PLUGIN_SETTINGS}" | jq -r '.acl //= "" | .acl')"
+SSE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.sse //= "" | .sse')"
+
+ERRORS_ONLY="$(echo "${PLUGIN_SETTINGS}" | jq -r '.only_show_errors //= "false" | .only_show_errors')"
+
+AWS_ACCESS_KEY_ID="$(echo "${PLUGIN_SETTINGS}" | jq -r '.aws_access_key_id //= "" | .aws_access_key_id')"
+AWS_SECRET_ACCESS_KEY="$(echo "${PLUGIN_SETTINGS}" | jq -r '.aws_secret_access_key //= "" | .aws_secret_access_key')"
+AWS_ASSUME_ROLE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.aws_assume_role //= "" | .aws_assume_role')"
+
+CLOUDFRONT_ID="$(echo "${PLUGIN_SETTINGS}" | jq -r '.cloudfront_distribution_id //= "" | .cloudfront_distribution_id')"
+
+if [ -z "${BUCKET}" ]; then
   echo "FATAL: Missing S3 Bucket Name"
   exit 1
 fi
 
-if [ "${PLUGIN_SETTINGS_TARGET:0:1}" != "/" ]; then
+if [ "${TARGET:0:1}" != "/" ]; then
   # Fix the target if it is not absolute
-  PLUGIN_SETTINGS_TARGET="/${PLUGIN_SETTINGS_TARGET}"
+  TARGET="/${TARGET}"
 fi
 
 # Prepare command-line options needed for aws s3 sync
 declare -a OPTIONS
-[ -n "${PLUGIN_SETTINGS_EXCLUDE}" ]               && OPTIONS+=(--exclude "'${PLUGIN_SETTINGS_EXCLUDE}'")
-[ -n "${PLUGIN_SETTINGS_INCLUDE}" ]               && OPTIONS+=(--include "'${PLUGIN_SETTINGS_INCLUDE}'")
-[ -n "${PLUGIN_SETTINGS_ACL}" ]                   && OPTIONS+=(--acl "${PLUGIN_SETTINGS_ACL}")
-[ -n "${PLUGIN_SETTINGS_SSE}" ]                   && OPTIONS+=(--sse "${PLUGIN_SETTINGS_SSE}")
-[ "${PLUGIN_SETTINGS_ONLY_SHOW_ERRORS}" == true ] && OPTIONS+=(--only-show-errors)
-[ "${PLUGIN_SETTINGS_DELETE}" == true ]           && OPTIONS+=(--delete)
+[ -n "${EXCLUDE}" ]          && OPTIONS+=(--exclude "'${EXCLUDE}'")
+[ -n "${INCLUDE}" ]          && OPTIONS+=(--include "'${INCLUDE}'")
+[ -n "${ACL}" ]              && OPTIONS+=(--acl "${ACL}")
+[ -n "${SSE}" ]              && OPTIONS+=(--sse "${SSE}")
+[ "${DELETE}" == true ]      && OPTIONS+=(--delete)
+[ "${ERRORS_ONLY}" == true ] && OPTIONS+=(--only-show-errors)
 
 # Export the credentials (if provided) for the AWS CLI
-if [ -n "${PLUGIN_SETTINGS_AWS_ACCESS_KEY_ID}" ] && [ -n "${PLUGIN_SETTINGS_AWS_SECRET_ACCESS_KEY}" ]; then
-  export AWS_ACCESS_KEY_ID="${PLUGIN_SETTINGS_AWS_ACCESS_KEY_ID}"
-  export AWS_SECRET_ACCESS_KEY="${PLUGIN_SETTINGS_AWS_SECRET_ACCESS_KEY}"
+if [ -n "${AWS_ACCESS_KEY_ID}" ] && [ -n "${AWS_SECRET_ACCESS_KEY}" ]; then
+  export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY
 fi
 
-if [ -n "${PLUGIN_SETTINGS_AWS_ASSUME_ROLE}" ]; then
+if [ -n "${AWS_ASSUME_ROLE}" ]; then
   # Assume the role provided, and override credentials (if provided)
   CREDENTIALS=$(set -x; aws sts assume-role \
-                  --role-arn ${PLUGIN_SETTINGS_AWS_ASSUME_ROLE} \
+                  --role-arn ${AWS_ASSUME_ROLE} \
                   --role-session-name drone-s3-sync)
   export AWS_ACCESS_KEY_ID=$(echo "${CREDENTIALS}" | jq -r '.Credentials.AccessKeyId')
   export AWS_SECRET_ACCESS_KEY=$(echo "${CREDENTIALS}" | jq -r '.Credentials.SecretAccessKey')
@@ -45,11 +60,11 @@ fi
 
 # Output the only the following command to STDOUT as well as run it
 ( set -x
-  aws s3 sync --region "${PLUGIN_SETTINGS_REGION}" "${OPTIONS[@]}" "${PLUGIN_SETTINGS_SOURCE}" "s3://${PLUGIN_SETTINGS_BUCKET}${PLUGIN_SETTINGS_TARGET%/}/" )
+  aws s3 sync --region "${REGION}" "${OPTIONS[@]}" "${SOURCE}" "s3://${BUCKET}${TARGET%/}/" )
 
 # If a CloudFront Distribution ID is set, also set an invalidation to the root
 # of the target we've been provided
-if [ -n "${PLUGIN_SETTINGS_CLOUDFRONT_DISTRIBUTION_ID}" ]; then
+if [ -n "${CLOUDFRONT_ID}" ]; then
   ( set -x
-    aws cloudfront create-invalidation --region "${PLUGIN_SETTINGS_REGION}" --distribution-id "${PLUGIN_SETTINGS_CLOUDFRONT_DISTRIBUTION_ID}" --paths "${PLUGIN_SETTINGS_TARGET%/}/*" )
+    aws cloudfront create-invalidation --region "${REGION}" --distribution-id "${CLOUDFRONT_ID}" --paths "${TARGET%/}/*" )
 fi
