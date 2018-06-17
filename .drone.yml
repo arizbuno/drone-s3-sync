@@ -8,5 +8,5 @@ pipeline:
     repo: jonathanio/drone-s3-sync
     auto_tag: true
     when:
-      event: push
+      event: [ push, tag ]
       branch: master
