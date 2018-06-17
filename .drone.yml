@@ -9,4 +9,3 @@ pipeline:
     auto_tag: true
     when:
       event: [ push, tag ]
-      branch: master
