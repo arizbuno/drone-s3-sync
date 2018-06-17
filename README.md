@@ -1,5 +1,7 @@
 # Drone AWS S3 Synchronisation Pipeline Plugin
 
+[![Build Status for Drone S3 Plugin](https://drone.nwk.io/api/badges/jonathanio/drone-s3-plugin/status.svg "Build Status")](https://drone.nwk.io/jonathanio/drone-s3-plugin)
+
 This plugin for a [Drone](https://drone.io) Pipeline utilises the `aws s3 sync`
 command to synchronise files and folders with a selected Amazon S3 bucket.
 
