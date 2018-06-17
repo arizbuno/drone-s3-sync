@@ -10,6 +10,8 @@ SOURCE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.source //= "." | .source')"
 TARGET="$(echo "${PLUGIN_SETTINGS}" | jq -r '.target //= "/" | .target')"
 DELETE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.delete //= "false" | .delete')"
 
+CACHE_CONTROL="$(echo "${PLUGIN_SETTINGS}" | jq -r '.cache_control //= "" | .cache_control')"
+
 EXCLUDE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.exclude //= "" | .exclude')"
 INCLUDE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.include //= "" | .include')"
 
@@ -35,7 +37,8 @@ if [ "${TARGET:0:1}" != "/" ]; then
 fi
 
 # Prepare command-line options needed for aws s3 sync
-declare -a OPTIONS
+OPTIONS=(--no-progess)
+[ -n "${CACHE_CONTROL}" ]    && OPTIONS+=(--metadata-directive REPLACE --cache-control "'${CACHE_CONTROL}'")
 [ -n "${EXCLUDE}" ]          && OPTIONS+=(--exclude "'${EXCLUDE}'")
 [ -n "${INCLUDE}" ]          && OPTIONS+=(--include "'${INCLUDE}'")
 [ -n "${ACL}" ]              && OPTIONS+=(--acl "${ACL}")

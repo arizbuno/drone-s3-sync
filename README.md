@@ -26,6 +26,7 @@ All options are managed below a `settings` key:
 | `region` | Optional | The region the bucket is within, as so to connect to it for the synchronisation (defaults to `us-east-1` if not set). |
 | `acl` | Optional | Sets the ACL for the object when the command is performed (e.g. `private`, `public-read`, `public-read-write`, `authenticated-read`, `aws-exec-read`, `bucket-owner-read`, `bucket-owner-full-control`, and `log-delivery-write`). |
 | `sse` | Optional | Sets the SSE parameter for the upload, if required, to enable encryption of the files at rest in the S3 bucket. |
+| `cache_control` | Optional | If provided, set this as the `Cache-Control` header in the file metadata. |
 | `source` | Optional | The location of folder (defaults to `.`, the current directory) to synchronise, either absolute or relative to the current working directory (i.e. the root of the repository). |
 | `target` | Optional | The target folder to upload the files and folders in `source` to inside your S3 bucket (defaults to `/`). |
 | `exclude` | Optional | Exclude all files or objects from the synchronisation that match the specified pattern. |
