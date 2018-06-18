@@ -63,7 +63,7 @@ fi
 
 # Output the only the following command to STDOUT as well as run it
 ( set -x
-  aws s3 sync --region "${REGION}" "${OPTIONS[@]}" "${SOURCE}" "s3://${BUCKET}${TARGET%/}/" )
+  aws s3 sync --region "${REGION}" "${SOURCE}" "s3://${BUCKET}${TARGET%/}/" "${OPTIONS[@]}" )
 
 # If a CloudFront Distribution ID is set, also set an invalidation to the root
 # of the target we've been provided
