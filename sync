@@ -37,7 +37,7 @@ if [ "${TARGET:0:1}" != "/" ]; then
 fi
 
 # Prepare command-line options needed for aws s3 sync
-OPTIONS=(--no-progess)
+declare -a OPTIONS
 [ -n "${CACHE_CONTROL}" ]    && OPTIONS+=(--metadata-directive REPLACE --cache-control "'${CACHE_CONTROL}'")
 [ -n "${EXCLUDE}" ]          && OPTIONS+=(--exclude "'${EXCLUDE}'")
 [ -n "${INCLUDE}" ]          && OPTIONS+=(--include "'${INCLUDE}'")
