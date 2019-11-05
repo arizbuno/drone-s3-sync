@@ -4,27 +4,27 @@
 set -e
 
 # Extract Settings
-REGION="$(echo "${PLUGIN_SETTINGS}" | jq -r '.region //= "us-east-1" | .region')"
-BUCKET="$(echo "${PLUGIN_SETTINGS}" | jq -r '.bucket //= "" | .bucket')"
-SOURCE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.source //= "." | .source')"
-TARGET="$(echo "${PLUGIN_SETTINGS}" | jq -r '.target //= "/" | .target')"
-DELETE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.delete //= "false" | .delete')"
+REGION=${PLUGIN_REGION}
+BUCKET=${PLUGIN_BUCKET}
+SOURCE=${PLUGIN_SOURCE}
+TARGET=${PLUGIN_TARGET}
+DELETE=${PLUGIN_DELETE}
 
-CACHE_CONTROL="$(echo "${PLUGIN_SETTINGS}" | jq -r '.cache_control //= "" | .cache_control')"
+CACHE_CONTROL=${PLUGIN_CACHE_CONTROL}
 
-EXCLUDE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.exclude //= "" | .exclude')"
-INCLUDE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.include //= "" | .include')"
+EXCLUDE=${PLUGIN_EXCLUDE}
+INCLUDE=${PLUGIN_INCLUDE}
 
-ACL="$(echo "${PLUGIN_SETTINGS}" | jq -r '.acl //= "" | .acl')"
-SSE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.sse //= "" | .sse')"
+ACL=${PLUGIN_ACL}
+SSE=${PLUGIN_SSE}
 
-ERRORS_ONLY="$(echo "${PLUGIN_SETTINGS}" | jq -r '.only_show_errors //= "false" | .only_show_errors')"
+ERRORS_ONLY=${PLUGIN_ERRORS_ONLY}
 
-AWS_ACCESS_KEY_ID="$(echo "${PLUGIN_SETTINGS}" | jq -r '.aws_access_key_id //= "" | .aws_access_key_id')"
-AWS_SECRET_ACCESS_KEY="$(echo "${PLUGIN_SETTINGS}" | jq -r '.aws_secret_access_key //= "" | .aws_secret_access_key')"
-AWS_ASSUME_ROLE="$(echo "${PLUGIN_SETTINGS}" | jq -r '.aws_assume_role //= "" | .aws_assume_role')"
+AWS_ACCESS_KEY_ID=${PLUGIN_AWS_ACCESS_KEY_ID}
+AWS_SECRET_ACCESS_KEY=${PLUGIN_AWS_SECRET_ACCESS_KEY}
+AWS_ASSUME_ROLE=${PLUGIN_AWS_ASSUME_ROLE}
 
-CLOUDFRONT_ID="$(echo "${PLUGIN_SETTINGS}" | jq -r '.cloudfront_distribution_id //= "" | .cloudfront_distribution_id')"
+CLOUDFRONT_ID=${PLUGIN_CLOUDFRONT_ID}
 
 if [ -z "${BUCKET}" ]; then
   echo "FATAL: Missing S3 Bucket Name"
